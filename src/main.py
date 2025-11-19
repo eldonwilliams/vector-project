@@ -18,8 +18,8 @@ import re
 
 DMS_PATTERN = r"(\d+)°(\d+)'(\d+)''"
 DEGREE_SYMBOL = "°"
-C = 40,000
-R = 6,371
+C = 40000
+R = 6371
 
 # Function Definitions
 
@@ -27,6 +27,8 @@ def coordinate_conversion():
   dms = input(f"DMS X{DEGREE_SYMBOL}Y\'Z\'\': ")
   m = re.match(DMS_PATTERN, dms)
   if not m:
+    print("Input did not match the correct formatting, enter it again")
+    coordinate_conversion()
     return
   degrees, minutes, seconds = map(int, m.groups())
   decimal = degrees + minutes / 60 + seconds / 60 ** 2
@@ -37,6 +39,17 @@ def haversine():
   lat1 = input("Latitude 1: ")
   long2 = input("Longitude 2: ")
   lat2 = input("Latitude 2: ")
+  
+  try:
+    long1 = float(long1)
+    lat1 = float(lat1)
+    long2 = float(long2)
+    lat2 = float(lat2)
+  except:
+    print("Some of the values you provided were not valid! Enter them again")
+    haversine()
+    return
+  
   dlon = long2 - long1
   dlat = lat2 - lat1
   a = (math.sin(dlat / 2)) ** 2 + math.cos(lat1) * math.cos(lat2) * (math.sin(dlon / 2)) ** 2
@@ -56,6 +69,8 @@ def vector_distance():
     long2 = float(long2)
     lat2 = float(lat2)
   except:
+    print("Some of the values you provided were not valid! Enter them again")
+    vector_distance()
     return
   
   x1 = long1 * (C / 360)
@@ -111,9 +126,11 @@ def run_menu():
   try:
     selection = int(selection) - 1
   except:
+    print("You did not provide a integer")
     return
   
   if not selection in range(0, len(OPTIONS)):
+    print("That is not an option")
     return
   
   # Select the option and execute
