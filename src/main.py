@@ -9,7 +9,7 @@
   You can check the cases I have included for comprehensiveness.
 """
 
-from os import _exit, remove
+import os
 import sys
 import math
 import re
@@ -20,6 +20,8 @@ DMS_PATTERN = r"(\d+)°(\d+)'(\d+)''"
 DEGREE_SYMBOL = "°"
 C = 40000
 R = 6371
+
+running = True
 
 # Function Definitions
 
@@ -88,6 +90,10 @@ def vector_distance():
   
   print(f"r, theta: ({r:.3f}, {theta:.3f})")
 
+def exit():
+  global running
+  running = False
+
 # Options Definition
 
 OPTIONS = [
@@ -107,7 +113,7 @@ OPTIONS = [
     "title": "Exit",
     # While I could exit using a sentinel as described in the Rubric,
     # This gives me more control over exit success states (i.e. in this case 0 is a graceful exit)
-    "function": lambda:_exit(0),
+    "function": exit,
   }
 ]
 
@@ -127,10 +133,12 @@ def run_menu():
     selection = int(selection) - 1
   except:
     print("You did not provide a integer")
+    run_menu()
     return
   
   if not selection in range(0, len(OPTIONS)):
     print("That is not an option")
+    run_menu()
     return
   
   # Select the option and execute
@@ -143,54 +151,215 @@ tests = [
   {
     "name": "DMS Conversion",
     "stdin": """1
-38°63'83''""",
+-1
+BAD INPUT
+38°63'83''
+4""",
     "expect": """1. Coordinate Conversion
 2. Vector Distance
 3. Haversine
 4. Exit
+DMS X°Y'Z'': Input did not match the correct formatting, enter it again
+DMS X°Y'Z'': Input did not match the correct formatting, enter it again
 DMS X°Y'Z'': Decimal Conversion: 39.073°
+1. Coordinate Conversion
+2. Vector Distance
+3. Haversine
+4. Exit
+"""
+  },
+  {
+    "name": "Menu",
+    "stdin": """this
+-1
+5
+4""",
+    "expect": """1. Coordinate Conversion
+2. Vector Distance
+3. Haversine
+4. Exit
+You did not provide a integer
+1. Coordinate Conversion
+2. Vector Distance
+3. Haversine
+4. Exit
+That is not an option
+1. Coordinate Conversion
+2. Vector Distance
+3. Haversine
+4. Exit
+That is not an option
+1. Coordinate Conversion
+2. Vector Distance
+3. Haversine
+4. Exit
+"""
+  },
+  {
+    "name": "Haversine",
+    "stdin": """3
+0
+0
+0
+1
+3
+-85.0
+38.0
+-85.0
+38.0
+3
+-85.12345
+38.54321
+-85.52345
+38.94321
+3
+potato
+40
+-75
+40
+0
+90
+0
+80
+4
+""",
+    "expect": """1. Coordinate Conversion
+2. Vector Distance
+3. Haversine
+4. Exit
+Longitude 1: Latitude 1: Longitude 2: Latitude 2: Distance: 6371.0 km
+1. Coordinate Conversion
+2. Vector Distance
+3. Haversine
+4. Exit
+Longitude 1: Latitude 1: Longitude 2: Latitude 2: Distance: 0.0 km
+1. Coordinate Conversion
+2. Vector Distance
+3. Haversine
+4. Exit
+Longitude 1: Latitude 1: Longitude 2: Latitude 2: Distance: 2811.0376881719144 km
+1. Coordinate Conversion
+2. Vector Distance
+3. Haversine
+4. Exit
+Longitude 1: Latitude 1: Longitude 2: Latitude 2: Some of the values you provided were not valid! Enter them again
+Longitude 1: Latitude 1: Longitude 2: Latitude 2: Distance: 16350.347184082291 km
+1. Coordinate Conversion
+2. Vector Distance
+3. Haversine
+4. Exit
+"""},
+  {
+    "name": "Vector Distance",
+    "stdin": """2
+0
+0
+1
+1
+2
+-85
+40
+-90
+35
+2
+10
+10
+10.001
+10.002
+2
+not_a_number
+50
+20
+20
+0
+0
+0
+0
+4
+""",
+    "expect": """1. Coordinate Conversion
+2. Vector Distance
+3. Haversine
+4. Exit
+Longitude 1: Latitude 1: Longitude 2: Latitude 2: ihat, jhat: (111.111 km, 111.111)
+r, theta: (157.135, 0.785)
+1. Coordinate Conversion
+2. Vector Distance
+3. Haversine
+4. Exit
+Longitude 1: Latitude 1: Longitude 2: Latitude 2: ihat, jhat: (-555.556 km, -555.556)
+r, theta: (785.674, -2.356)
+1. Coordinate Conversion
+2. Vector Distance
+3. Haversine
+4. Exit
+Longitude 1: Latitude 1: Longitude 2: Latitude 2: ihat, jhat: (0.111 km, 0.222)
+r, theta: (0.248, 1.107)
+1. Coordinate Conversion
+2. Vector Distance
+3. Haversine
+4. Exit
+Longitude 1: Latitude 1: Longitude 2: Latitude 2: Some of the values you provided were not valid! Enter them again
+Longitude 1: Latitude 1: Longitude 2: Latitude 2: ihat, jhat: (0.000 km, 0.000)
+r, theta: (0.000, 0.000)
+1. Coordinate Conversion
+2. Vector Distance
+3. Haversine
+4. Exit
 """
   }
 ]
 
 def run_test_suite():
-  original_stdout = sys.stdout
   for test in tests:
-    original_stdout.write(f"Running test: {test["name"]}\n")
-    # Write the stdin for the test
-    with open("stdin.bin", "w") as f:
-      f.write(test["stdin"])
+    with open("stdin.bin", "w") as stdin:
+      stdin.write(test["stdin"])
     
-    # Now that we've written stdin we can open it back up in read mode and open up stdout for writing
-    with open("stdin.bin", "r") as mock_stdin, open("stdout.bin", "w") as mock_stdout:
-      sys.stdin = mock_stdin
-      sys.stdout = mock_stdout
-      try:
-        run_menu()
-      except:
-        original_stdout.write(f"\nTest ({test["name"]}) failed with an exception!\n")
+    status = os.spawnl(os.P_WAIT, sys.executable, sys.executable, "main.py", "case_runner")
+    if status != 0:
+      print(f"Test ({test["name"]}) had an exception, however, this does not mean an error")
     
     # Now we've ran the tests, but need to validate
     with open("stdout.bin", "r") as mock_stdout:
       result = mock_stdout.read()
       if result == test["expect"]:
-        original_stdout.write(f"Test ({test["name"]}) passed!\n")
+        print(f"Test ({test["name"]}) passed!\n")
       else:
-        original_stdout.write(f"\n=============\nTest ({test["name"]}) Failed!\n=============\nExpected:\n===========\n{test['expect']}\n===========\nGot:\n=============\n{result}============\n")
-    
-  sys.stdout = original_stdout
+        print(f"""
+=================
+Test ({test["name"]}) Failed!
+=================
+Expected:
+=================
+{test['expect']}
+=================
+Got:
+=================
+{result}
+=================
+""")
   print(f"Finished Tests")
   # I'll clean up those files for you Dr. Bego
-  remove("stdin.bin")
-  remove("stdout.bin")
-  
+  os.remove("stdin.bin")
+  os.remove("stdout.bin")
+
+def case_runner():
+  with open("stdin.bin", "r") as mock_stdin, open("stdout.bin", "w") as mock_stdout:
+    sys.stdout = mock_stdout
+    sys.stdin = mock_stdin
+    while running:
+      run_menu()
 
 def main():
   cli = sys.argv[1:]
-  if "TEST" in cli:
+  if "test" in cli:
     run_test_suite()
     return
-  while True:
+  if "case_runner" in cli:
+    case_runner()
+    return
+  
+  while running:
     run_menu()
 
 if __name__ == "__main__":
