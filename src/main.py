@@ -16,7 +16,7 @@ import re
 
 # Constants
 
-DMS_PATTERN = r"(\d+)°(\d+)'(\d+)''"
+DMS_PATTERN = r"(\d+)°(\d+)'(\d+(?:\.\d*)?)''"
 DEGREE_SYMBOL = "°"
 C = 40000
 R = 6371
@@ -32,7 +32,7 @@ def coordinate_conversion():
     print("Input did not match the correct formatting, enter it again")
     coordinate_conversion()
     return
-  degrees, minutes, seconds = map(int, m.groups())
+  degrees, minutes, seconds = map(float, m.groups())
   decimal = degrees + minutes / 60 + seconds / 60 ** 2
   print(f"Decimal Conversion: {decimal:.3f}{DEGREE_SYMBOL}")
 
