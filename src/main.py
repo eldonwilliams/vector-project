@@ -26,7 +26,7 @@ running = True
 # Function Definitions
 
 def coordinate_conversion():
-  dms = input(f"DMS X{DEGREE_SYMBOL}Y\'Z\'\': ")
+  dms = input(f"DMS Degrees{DEGREE_SYMBOL}Minutes\'Seconds\'\': ")
   m = re.match(DMS_PATTERN, dms)
   if not m:
     print("Input did not match the correct formatting, enter it again")
@@ -37,10 +37,10 @@ def coordinate_conversion():
   print(f"Decimal Conversion: {decimal:.3f}{DEGREE_SYMBOL}")
 
 def haversine():
-  long1 = input("Longitude 1: ")
-  lat1 = input("Latitude 1: ")
-  long2 = input("Longitude 2: ")
-  lat2 = input("Latitude 2: ")
+  long1 = input("Longitude 1 (Decimal Degrees): ")
+  lat1 = input("Latitude 1 (Decimal Degrees): ")
+  long2 = input("Longitude 2 (Decimal Degrees): ")
+  lat2 = input("Latitude 2 (Decimal Degrees): ")
   
   try:
     long1 = float(long1)
@@ -52,18 +52,20 @@ def haversine():
     haversine()
     return
   
-  dlon = long2 - long1
-  dlat = lat2 - lat1
+  dlon = math.radians(long2 - long1)
+  dlat = math.radians(lat2 - lat1)
   a = (math.sin(dlat / 2)) ** 2 + math.cos(lat1) * math.cos(lat2) * (math.sin(dlon / 2)) ** 2
   d = 2 * R * math.asin(math.sqrt(a))
-  print(f"Distance: {d} km")
+  
+  theta = math.atan((math.sin(dlon) * math.cos(lat2)) / (math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(dlon)))
+  print(f"Distance: {d} km, Bearing: {theta}{DEGREE_SYMBOL} decimal degrees")
   
 
 def vector_distance():
-  long1 = input("Longitude 1: ")
-  lat1 = input("Latitude 1: ")
-  long2 = input("Longitude 2: ")
-  lat2 = input("Latitude 2: ")
+  long1 = input("Longitude 1 (Decimal Degrees): ")
+  lat1 = input("Latitude 1 (Decimal Degrees): ")
+  long2 = input("Longitude 2 (Decimal Degrees): ")
+  lat2 = input("Latitude 2 (Decimal Degrees): ")
   
   try:
     long1 = float(long1)
