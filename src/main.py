@@ -43,22 +43,25 @@ def haversine():
   lat2 = input("Latitude 2 (Decimal Degrees): ")
   
   try:
-    long1 = float(long1)
-    lat1 = float(lat1)
-    long2 = float(long2)
-    lat2 = float(lat2)
+    long1 = math.radians(float(long1))
+    lat1 = math.radians(float(lat1))
+    long2 = math.radians(float(long2))
+    lat2 = math.radians(float(lat2))
   except:
     print("Some of the values you provided were not valid! Enter them again")
     haversine()
     return
   
-  dlon = math.radians(long2 - long1)
-  dlat = math.radians(lat2 - lat1)
+  dlon = long2 - long1
+  dlat = lat2 - lat1
   a = (math.sin(dlat / 2)) ** 2 + math.cos(lat1) * math.cos(lat2) * (math.sin(dlon / 2)) ** 2
   d = 2 * R * math.asin(math.sqrt(a))
   
-  theta = math.atan((math.sin(dlon) * math.cos(lat2)) / (math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(dlon)))
-  print(f"Distance: {d} km, Bearing: {theta}{DEGREE_SYMBOL} decimal degrees")
+  theta = math.atan2(
+    math.sin(dlon) * math.cos(lat2),
+    math.cos(lat1)*math.sin(lat2) - math.sin(lat1)*math.cos(lat2)*math.cos(dlon)
+    )
+  print(f"Distance: {d} km, Bearing: {math.degrees(theta)}{DEGREE_SYMBOL} decimal degrees")
   
 
 def vector_distance():
@@ -90,7 +93,7 @@ def vector_distance():
   r = math.sqrt(ihat ** 2 + jhat ** 2)
   theta = math.atan2(jhat, ihat)
   
-  print(f"r, theta: ({r:.3f}, {theta:.3f})")
+  print(f"r, theta (radians): ({r:.3f}, {theta:.3f})")
 
 def exit():
   global running
@@ -125,7 +128,7 @@ def run_menu():
   # Display each option
   for option_index in range(0, len(OPTIONS)):
     option = OPTIONS[option_index]
-    print(f"{option_index + 1}. {option["title"]}")
+    print(f"{option_index + 1}. {option['title']}")
   
   # Get selection as a integer
   selection = input()
@@ -319,13 +322,13 @@ def run_test_suite():
     
     status = os.spawnl(os.P_WAIT, sys.executable, sys.executable, "main.py", "case_runner")
     if status != 0:
-      print(f"Test ({test["name"]}) had an exception, however, this does not mean an error")
+      print(f"Test ({test['name']}) had an exception, however, this does not mean an error")
     
     # Now we've ran the tests, but need to validate
     with open("stdout.bin", "r") as mock_stdout:
       result = mock_stdout.read()
       if result == test["expect"]:
-        print(f"Test ({test["name"]}) passed!\n")
+        print(f"Test ({test['name']}) passed!\n")
       else:
         print(f"""
 =================
